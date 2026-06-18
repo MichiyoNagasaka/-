@@ -233,7 +233,7 @@
   }
   .items-head {
     display: grid;
-    grid-template-columns: 1fr 90px 72px 36px;
+    grid-template-columns: 1fr 90px 60px 36px;
     background: var(--surface2);
     border-bottom: 1px solid var(--border);
     padding: 7px 10px;
@@ -251,7 +251,7 @@
 
   .item-row {
     display: grid;
-    grid-template-columns: 1fr 90px 72px 36px;
+    grid-template-columns: 1fr 90px 60px 36px;
     padding: 6px 10px;
     gap: 6px;
     align-items: center;
@@ -434,8 +434,9 @@
       <span style="color:rgba(255,255,255,0.7);font-size:13px;">円</span>
     </div>
     <div class="grand-total">合計 <span id="grandTotal">¥0</span></div>
-    <button class="btn-reset-all" onclick="confirmResetAll()">全リセット</button>
-    <button class="btn-excel" onclick="exportExcel()">Excel出力</button>
+    <div class="grand-total">次の特典まで <span id="nextTokuten">—</span></div>
+    <button type="button" class="btn-reset-all" onclick="confirmResetAll()">全リセット</button>
+    <button type="button" class="btn-excel" onclick="exportExcel()">Excel出力</button>
   </div>
 </div>
 
@@ -443,7 +444,7 @@
 <div class="main" id="blocksContainer"></div>
 
 <div class="main">
-  <button class="btn-add-block" onclick="addBlock()">＋ 代行引き受けを追加</button>
+  <button type="button" class="btn-add-block" onclick="addBlock()">＋ 代行引き受けを追加</button>
 </div>
 
 <!-- リセット確認モーダル -->
@@ -452,8 +453,8 @@
     <h3 id="modalTitle">リセットしますか？</h3>
     <p id="modalDesc">この操作は元に戻せません。</p>
     <div class="modal-btns">
-      <button class="btn-cancel" onclick="closeModal()">キャンセル</button>
-      <button class="btn-confirm-reset" onclick="executeReset()">リセット</button>
+      <button type="button" class="btn-cancel" onclick="closeModal()">キャンセル</button>
+      <button type="button" class="btn-confirm-reset" onclick="executeReset()">リセット</button>
     </div>
   </div>
 </div>
@@ -463,7 +464,7 @@
 
   // --- データ構造 ---
   function emptyItem() {
-    return { name: '', price: '', qty: 1 };
+    return { name: '', price: '', qty: '' };
   }
   function emptyBlock() {
     return {
@@ -518,7 +519,7 @@
     header.className = 'block-header';
     header.innerHTML = `
       <span class="block-number">代行引き受け ${bi + 1}</span>
-      <button class="btn-reset-block" onclick="confirmResetBlock('${block.id}')">この申込をリセット</button>
+      <button type="button" class="btn-reset-block" onclick="confirmResetBlock('${block.id}')">この申込をリセット</button>
     `;
     wrap.appendChild(header);
 
@@ -579,12 +580,10 @@
         <input type="number" placeholder="0" value="${item.price}"
           inputmode="numeric" min="0"
           oninput="updateItem('${block.id}',${ii},'price',this.value)">
-        <div class="qty-picker">
-          <button class="qty-btn" onclick="changeQty('${block.id}',${ii},-1)">−</button>
-          <span class="qty-display">${item.qty}</span>
-          <button class="qty-btn" onclick="changeQty('${block.id}',${ii},1)">＋</button>
-        </div>
-        <button class="btn-remove-row" onclick="removeItem('${block.id}',${ii})" title="削除">×</button>
+        <input type="number" placeholder="1" value="${item.qty}"
+          inputmode="numeric" min="1" max="99"
+          oninput="updateItem('${block.id}',${ii},'qty',this.value);rerenderTotals(blocks.find(b=>String(b.id)==='${block.id}'),'${block.id}');updateGrandTotal()">
+        <button type="button" class="btn-remove-row" onclick="removeItem('${block.id}',${ii})" title="削除">×</button>
       `;
       table.appendChild(row);
     });
@@ -614,6 +613,16 @@
   function updateGrandTotal() {
     const total = blocks.reduce((sum, b) => sum + calcSubtotal(b), 0);
     document.getElementById('grandTotal').textContent = '¥' + total.toLocaleString();
+
+    const tPrice = parseInt(tokutenPrice) || 0;
+    const nextEl = document.getElementById('nextTokuten');
+    if (tPrice > 0) {
+      const remainder = total % tPrice;
+      const next = remainder === 0 ? tPrice : tPrice - remainder;
+      nextEl.textContent = '¥' + next.toLocaleString();
+    } else {
+      nextEl.textContent = '—';
+    }
   }
 
   // --- 操作 ---
@@ -718,13 +727,14 @@
   }
 
   function executeReset() {
+    const target = resetTarget;
     closeModal();
-    if (resetTarget === 'all') {
+    if (target === 'all') {
       blocks = [emptyBlock()];
       tokutenPrice = '';
       eventName = '';
     } else {
-      const idx = blocks.findIndex(b => String(b.id) === String(resetTarget));
+      const idx = blocks.findIndex(b => String(b.id) === String(target));
       if (idx !== -1) blocks[idx] = emptyBlock();
     }
     save();
