@@ -1,0 +1,944 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>イベント特典フォーム</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #EFF4FB;
+    --surface: #FFFFFF;
+    --surface2: #E4EDF8;
+    --border: #C5D5EC;
+    --accent: #2B6CB0;
+    --accent-light: #EBF2FC;
+    --danger: #C0392B;
+    --danger-light: #FCECEA;
+    --text: #1A2A3A;
+    --text-sub: #5A7290;
+    --shadow: 0 2px 12px rgba(43,108,176,0.10);
+    --radius: 14px;
+    --radius-sm: 8px;
+  }
+
+  body {
+    font-family: -apple-system, 'Hiragino Sans', 'Yu Gothic', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 0 0 60px;
+  }
+
+  /* ヘッダー */
+  .header {
+    background: var(--accent);
+    color: #fff;
+    padding: 20px 16px 16px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 8px rgba(43,108,176,0.3);
+  }
+  .header h1 {
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    margin-bottom: 10px;
+  }
+  .event-name-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+  .event-name-row label {
+    font-size: 13px;
+    color: rgba(255,255,255,0.85);
+    white-space: nowrap;
+  }
+  .event-name-input {
+    flex: 1;
+    padding: 8px 12px;
+    border: 1.5px solid rgba(255,255,255,0.4);
+    border-radius: var(--radius-sm);
+    background: rgba(255,255,255,0.15);
+    color: #fff;
+    font-size: 15px;
+    -webkit-appearance: none;
+  }
+  .event-name-input::placeholder { color: rgba(255,255,255,0.5); }
+  .event-name-input:focus { outline: none; border-color: rgba(255,255,255,0.8); background: rgba(255,255,255,0.25); }
+  .header-controls {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .tokuten-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+    min-width: 200px;
+  }
+  .tokuten-row label {
+    font-size: 13px;
+    color: rgba(255,255,255,0.85);
+    white-space: nowrap;
+  }
+  .tokuten-input {
+    flex: 1;
+    padding: 8px 12px;
+    border: 1.5px solid rgba(255,255,255,0.4);
+    border-radius: var(--radius-sm);
+    background: rgba(255,255,255,0.15);
+    color: #fff;
+    font-size: 16px;
+    font-weight: 600;
+    text-align: right;
+    width: 120px;
+    -webkit-appearance: none;
+  }
+  .tokuten-input::placeholder { color: rgba(255,255,255,0.5); }
+  .tokuten-input:focus { outline: none; border-color: rgba(255,255,255,0.8); background: rgba(255,255,255,0.25); }
+
+  .grand-total {
+    background: rgba(255,255,255,0.18);
+    border-radius: var(--radius-sm);
+    padding: 8px 14px;
+    font-size: 13px;
+    color: rgba(255,255,255,0.85);
+    white-space: nowrap;
+  }
+  .grand-total span {
+    font-size: 18px;
+    font-weight: 700;
+    color: #fff;
+    margin-left: 4px;
+  }
+
+  .btn-reset-all {
+    padding: 8px 14px;
+    border: 1.5px solid rgba(255,255,255,0.5);
+    border-radius: var(--radius-sm);
+    background: transparent;
+    color: rgba(255,255,255,0.9);
+    font-size: 13px;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    white-space: nowrap;
+  }
+  .btn-reset-all:active { background: rgba(255,255,255,0.15); }
+
+  .btn-excel {
+    padding: 8px 14px;
+    border: none;
+    border-radius: var(--radius-sm);
+    background: rgba(255,255,255,0.9);
+    color: var(--accent);
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    white-space: nowrap;
+  }
+  .btn-excel:active { background: rgba(255,255,255,0.7); }
+
+  /* メインコンテンツ */
+  .main { padding: 16px; }
+
+  /* かたまり */
+  .block {
+    background: var(--surface);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    margin-bottom: 20px;
+    overflow: hidden;
+    border: 1.5px solid var(--border);
+  }
+
+  .block-header {
+    background: var(--surface2);
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--border);
+  }
+  .block-number {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--accent);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  .btn-reset-block {
+    padding: 5px 12px;
+    border: 1.5px solid var(--border);
+    border-radius: 20px;
+    background: var(--surface);
+    color: var(--text-sub);
+    font-size: 12px;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .btn-reset-block:active { background: var(--surface2); }
+
+  .block-body { padding: 16px; }
+
+  /* フィールド */
+  .field { margin-bottom: 14px; }
+  .field label {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-sub);
+    margin-bottom: 5px;
+    letter-spacing: 0.03em;
+  }
+  .field input[type="text"] {
+    width: 100%;
+    padding: 11px 14px;
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-size: 16px;
+    background: var(--bg);
+    color: var(--text);
+    -webkit-appearance: none;
+    transition: border-color 0.15s;
+  }
+  .field input[type="text"]:focus {
+    outline: none;
+    border-color: var(--accent);
+    background: var(--accent-light);
+  }
+
+  /* 商品テーブル */
+  .items-section { margin-bottom: 14px; }
+  .items-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-sub);
+    margin-bottom: 8px;
+    letter-spacing: 0.03em;
+  }
+
+  .items-table {
+    width: 100%;
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+  }
+  .items-head {
+    display: grid;
+    grid-template-columns: 1fr 90px 60px 36px;
+    background: var(--surface2);
+    border-bottom: 1px solid var(--border);
+    padding: 7px 10px;
+    gap: 6px;
+  }
+  .items-head span {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-sub);
+    letter-spacing: 0.03em;
+  }
+  .items-head span:nth-child(2),
+  .items-head span:nth-child(3) { text-align: right; }
+  .items-head span:nth-child(4) { text-align: center; }
+
+  .item-row {
+    display: grid;
+    grid-template-columns: 1fr 90px 60px 36px;
+    padding: 6px 10px;
+    gap: 6px;
+    align-items: center;
+    border-bottom: 1px solid var(--border);
+  }
+  .item-row:last-child { border-bottom: none; }
+  .item-row input[type="text"],
+  .item-row input[type="number"] {
+    width: 100%;
+    padding: 8px 10px;
+    border: 1.5px solid var(--border);
+    border-radius: 6px;
+    font-size: 15px;
+    background: var(--bg);
+    color: var(--text);
+    -webkit-appearance: none;
+    transition: border-color 0.15s;
+  }
+  .item-row input[type="text"]:focus,
+  .item-row input[type="number"]:focus {
+    outline: none;
+    border-color: var(--accent);
+    background: var(--accent-light);
+  }
+  .item-row input[type="number"] { text-align: right; }
+
+  /* 個数ピッカー */
+  .qty-picker {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 4px;
+  }
+  .qty-btn {
+    width: 28px;
+    height: 28px;
+    border: 1.5px solid var(--border);
+    border-radius: 6px;
+    background: var(--surface);
+    color: var(--accent);
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    -webkit-tap-highlight-color: transparent;
+    flex-shrink: 0;
+  }
+  .qty-btn:active { background: var(--accent-light); }
+  .qty-display {
+    font-size: 15px;
+    font-weight: 600;
+    min-width: 26px;
+    text-align: center;
+    color: var(--text);
+  }
+
+  .btn-remove-row {
+    width: 28px; height: 28px;
+    border: 1.5px solid var(--border);
+    border-radius: 6px;
+    background: var(--surface);
+    color: var(--text-sub);
+    font-size: 16px;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    -webkit-tap-highlight-color: transparent;
+    margin: 0 auto;
+  }
+  .btn-remove-row:active { background: var(--danger-light); color: var(--danger); }
+
+  .btn-add-row {
+    width: 100%;
+    padding: 10px;
+    border: 1.5px dashed var(--border);
+    border-radius: 0 0 var(--radius-sm) var(--radius-sm);
+    border-top: none;
+    background: var(--bg);
+    color: var(--accent);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+  }
+  .btn-add-row:active { background: var(--accent-light); }
+
+  /* 合計・特典表示 */
+  .block-totals {
+    background: var(--accent-light);
+    border: 1.5px solid #C3DDD8;
+    border-radius: var(--radius-sm);
+    padding: 12px 16px;
+    display: flex;
+    gap: 16px;
+    margin-bottom: 14px;
+  }
+  .total-item { flex: 1; }
+  .total-item .total-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--accent);
+    letter-spacing: 0.04em;
+    margin-bottom: 2px;
+  }
+  .total-item .total-value {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--text);
+  }
+  .total-item .total-unit {
+    font-size: 12px;
+    font-weight: 400;
+    color: var(--text-sub);
+    margin-left: 2px;
+  }
+
+  /* ボタン類 */
+  .btn-add-block {
+    width: 100%;
+    padding: 16px;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: var(--radius);
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    box-shadow: 0 4px 14px rgba(43,108,176,0.35);
+    letter-spacing: 0.04em;
+  }
+  .btn-add-block:active { opacity: 0.85; }
+
+  /* モーダル確認 */
+  .modal-overlay {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.45);
+    z-index: 200;
+    align-items: flex-end;
+    justify-content: center;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: var(--surface);
+    border-radius: 20px 20px 0 0;
+    padding: 24px 20px 36px;
+    width: 100%;
+    max-width: 500px;
+  }
+  .modal h3 { font-size: 17px; font-weight: 700; margin-bottom: 8px; }
+  .modal p { font-size: 14px; color: var(--text-sub); margin-bottom: 20px; }
+  .modal-btns { display: flex; gap: 10px; }
+  .modal-btns button {
+    flex: 1; padding: 13px; border-radius: var(--radius-sm);
+    font-size: 15px; font-weight: 600; cursor: pointer; border: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .btn-cancel { background: var(--surface2); color: var(--text); }
+  .btn-confirm-reset { background: var(--danger); color: #fff; }
+
+  .yen::before { content: '¥'; font-size: 0.7em; margin-right: 1px; }
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+</head>
+<body>
+
+<!-- ヘッダー -->
+<div class="header">
+  <h1>イベント特典フォーム</h1>
+  <div class="event-name-row">
+    <label for="eventName">イベント名</label>
+    <input type="text" id="eventName" class="event-name-input" placeholder="イベント名を入力">
+  </div>
+  <div class="header-controls">
+    <div class="tokuten-row">
+      <label for="tokutenPrice">特典金額</label>
+      <input type="number" id="tokutenPrice" class="tokuten-input" placeholder="例: 3000" min="1" inputmode="numeric">
+      <span style="color:rgba(255,255,255,0.7);font-size:13px;">円</span>
+    </div>
+    <div class="grand-total">合計 <span id="grandTotal">¥0</span></div>
+    <div class="grand-total">次の特典まで <span id="nextTokuten">—</span></div>
+    <button type="button" class="btn-reset-all" onclick="confirmResetAll()">全リセット</button>
+    <button type="button" class="btn-excel" onclick="exportExcel()">Excel出力</button>
+  </div>
+</div>
+
+<!-- メイン -->
+<div class="main" id="blocksContainer"></div>
+
+<div class="main">
+  <button type="button" class="btn-add-block" onclick="addBlock()">＋ 代行引き受けを追加</button>
+</div>
+
+<!-- リセット確認モーダル -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <h3 id="modalTitle">リセットしますか？</h3>
+    <p id="modalDesc">この操作は元に戻せません。</p>
+    <div class="modal-btns">
+      <button type="button" class="btn-cancel" onclick="closeModal()">キャンセル</button>
+      <button type="button" class="btn-confirm-reset" onclick="executeReset()">リセット</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  let resetTarget = null; // 'all' or blockId
+
+  // --- データ構造 ---
+  function emptyItem() {
+    return { name: '', price: '', qty: '' };
+  }
+  function emptyBlock() {
+    return {
+      id: Date.now() + Math.random(),
+      customer: '',
+      tokuten: '',
+      items: [emptyItem(), emptyItem(), emptyItem(), emptyItem(), emptyItem()]
+    };
+  }
+
+  let blocks = [];
+  let tokutenPrice = '';
+  let eventName = '';
+
+  // --- ローカルストレージ ---
+  function save() {
+    localStorage.setItem('tokutenForm', JSON.stringify({ blocks, tokutenPrice, eventName }));
+  }
+  function load() {
+    const d = localStorage.getItem('tokutenForm');
+    if (d) {
+      try {
+        const parsed = JSON.parse(d);
+        blocks = parsed.blocks || [];
+        tokutenPrice = parsed.tokutenPrice || '';
+        eventName = parsed.eventName || '';
+      } catch(e) {}
+    }
+    if (blocks.length === 0) blocks = [emptyBlock()];
+  }
+
+  // --- レンダリング ---
+  function render() {
+    document.getElementById('tokutenPrice').value = tokutenPrice;
+    document.getElementById('eventName').value = eventName;
+    updateGrandTotal();
+
+    const container = document.getElementById('blocksContainer');
+    container.innerHTML = '';
+    blocks.forEach((block, bi) => {
+      container.appendChild(createBlockEl(block, bi));
+    });
+  }
+
+  function createBlockEl(block, bi) {
+    const wrap = document.createElement('div');
+    wrap.className = 'block';
+    wrap.dataset.id = block.id;
+
+    // ヘッダー
+    const header = document.createElement('div');
+    header.className = 'block-header';
+    header.innerHTML = `
+      <span class="block-number">代行引き受け ${bi + 1}</span>
+      <button type="button" class="btn-reset-block" onclick="confirmResetBlock('${block.id}')">この申込をリセット</button>
+    `;
+    wrap.appendChild(header);
+
+    const body = document.createElement('div');
+    body.className = 'block-body';
+
+    // お名前
+    body.innerHTML += `
+      <div class="field">
+        <label>お名前</label>
+        <input type="text" placeholder="例: 山田 花子" value="${esc(block.customer)}"
+          oninput="updateField('${block.id}','customer',this.value)">
+      </div>
+      <div class="field">
+        <label>希望特典</label>
+        <input type="text" placeholder="希望する特典を入力" value="${esc(block.tokuten)}"
+          oninput="updateField('${block.id}','tokuten',this.value)">
+      </div>
+    `;
+
+    // 合計・特典枚数
+    const subtotal = calcSubtotal(block);
+    const tPrice = parseInt(tokutenPrice) || 0;
+    const tCount = tPrice > 0 ? Math.floor(subtotal / tPrice) : 0;
+
+    body.innerHTML += `
+      <div class="block-totals">
+        <div class="total-item">
+          <div class="total-label">合計金額</div>
+          <div class="total-value"><span class="yen"></span>${subtotal.toLocaleString()}<span class="total-unit">円</span></div>
+        </div>
+        <div class="total-item">
+          <div class="total-label">特典枚数</div>
+          <div class="total-value">${tCount}<span class="total-unit">枚</span></div>
+        </div>
+      </div>
+    `;
+
+    // 商品リスト
+    const itemsSec = document.createElement('div');
+    itemsSec.className = 'items-section';
+    itemsSec.innerHTML = `<div class="items-label">購入商品</div>`;
+
+    const table = document.createElement('div');
+    table.className = 'items-table';
+    table.innerHTML = `
+      <div class="items-head">
+        <span>商品名</span><span>単価（円）</span><span>個数</span><span></span>
+      </div>
+    `;
+
+    block.items.forEach((item, ii) => {
+      const row = document.createElement('div');
+      row.className = 'item-row';
+      row.innerHTML = `
+        <input type="text" placeholder="商品名" value="${esc(item.name)}"
+          oninput="updateItem('${block.id}',${ii},'name',this.value)">
+        <input type="number" placeholder="0" value="${item.price}"
+          inputmode="numeric" min="0"
+          oninput="updateItem('${block.id}',${ii},'price',this.value)">
+        <input type="number" placeholder="1" value="${item.qty}"
+          inputmode="numeric" min="1" max="99"
+          oninput="updateItem('${block.id}',${ii},'qty',this.value);rerenderTotals(blocks.find(b=>String(b.id)==='${block.id}'),'${block.id}');updateGrandTotal()">
+        <button type="button" class="btn-remove-row" onclick="removeItem('${block.id}',${ii})" title="削除">×</button>
+      `;
+      table.appendChild(row);
+    });
+
+    const addRowBtn = document.createElement('button');
+    addRowBtn.className = 'btn-add-row';
+    addRowBtn.innerHTML = '＋ 商品を追加';
+    addRowBtn.onclick = () => addItem(block.id);
+    table.appendChild(addRowBtn);
+
+    itemsSec.appendChild(table);
+    body.appendChild(itemsSec);
+
+    wrap.appendChild(body);
+    return wrap;
+  }
+
+  // --- 計算 ---
+  function calcSubtotal(block) {
+    return block.items.reduce((sum, item) => {
+      const p = parseInt(item.price) || 0;
+      const q = parseInt(item.qty) || 0;
+      return sum + p * q;
+    }, 0);
+  }
+
+  function updateGrandTotal() {
+    const total = blocks.reduce((sum, b) => sum + calcSubtotal(b), 0);
+    document.getElementById('grandTotal').textContent = '¥' + total.toLocaleString();
+
+    const tPrice = parseInt(tokutenPrice) || 0;
+    const nextEl = document.getElementById('nextTokuten');
+    if (tPrice > 0) {
+      const remainder = total % tPrice;
+      const next = remainder === 0 ? tPrice : tPrice - remainder;
+      nextEl.textContent = '¥' + next.toLocaleString();
+    } else {
+      nextEl.textContent = '—';
+    }
+  }
+
+  // --- 操作 ---
+  function updateField(id, field, val) {
+    const b = blocks.find(b => String(b.id) === String(id));
+    if (!b) return;
+    b[field] = val;
+    save();
+    updateGrandTotal();
+  }
+
+  function updateItem(id, ii, field, val) {
+    const b = blocks.find(b => String(b.id) === String(id));
+    if (!b) return;
+    b.items[ii][field] = val;
+    save();
+    // 合計・特典枚数だけ再描画（軽量）
+    rerenderTotals(b, id);
+    updateGrandTotal();
+  }
+
+  function changeQty(id, ii, delta) {
+    const b = blocks.find(b => String(b.id) === String(id));
+    if (!b) return;
+    const newQty = Math.min(99, Math.max(1, (b.items[ii].qty || 1) + delta));
+    b.items[ii].qty = newQty;
+    save();
+    // qty表示更新
+    const blockEl = document.querySelector(`[data-id="${id}"]`);
+    if (blockEl) {
+      const rows = blockEl.querySelectorAll('.item-row');
+      if (rows[ii]) {
+        rows[ii].querySelector('.qty-display').textContent = newQty;
+      }
+    }
+    rerenderTotals(b, id);
+    updateGrandTotal();
+  }
+
+  function rerenderTotals(block, id) {
+    const blockEl = document.querySelector(`[data-id="${id}"]`);
+    if (!blockEl) return;
+    const subtotal = calcSubtotal(block);
+    const tPrice = parseInt(tokutenPrice) || 0;
+    const tCount = tPrice > 0 ? Math.floor(subtotal / tPrice) : 0;
+    const totalsEl = blockEl.querySelector('.block-totals');
+    if (totalsEl) {
+      totalsEl.querySelector('.total-item:nth-child(1) .total-value').innerHTML =
+        `<span class="yen"></span>${subtotal.toLocaleString()}<span class="total-unit">円</span>`;
+      totalsEl.querySelector('.total-item:nth-child(2) .total-value').innerHTML =
+        `${tCount}<span class="total-unit">枚</span>`;
+    }
+  }
+
+  function addItem(id) {
+    const b = blocks.find(b => String(b.id) === String(id));
+    if (!b) return;
+    b.items.push(emptyItem());
+    save();
+    render();
+  }
+
+  function removeItem(id, ii) {
+    const b = blocks.find(b => String(b.id) === String(id));
+    if (!b || b.items.length <= 1) return;
+    b.items.splice(ii, 1);
+    save();
+    render();
+  }
+
+  function addBlock() {
+    blocks.push(emptyBlock());
+    save();
+    render();
+    // 新しいブロックまでスクロール
+    setTimeout(() => {
+      const allBlocks = document.querySelectorAll('.block');
+      allBlocks[allBlocks.length - 1]?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 100);
+  }
+
+  // --- リセット ---
+  function confirmResetAll() {
+    resetTarget = 'all';
+    document.getElementById('modalTitle').textContent = '全データをリセットしますか？';
+    document.getElementById('modalDesc').textContent = 'すべての申込者情報と特典金額が消えます。この操作は元に戻せません。';
+    document.getElementById('modalOverlay').classList.add('open');
+  }
+
+  function confirmResetBlock(id) {
+    resetTarget = id;
+    const b = blocks.find(b => String(b.id) === String(id));
+    const name = b?.customer || 'この申込者';
+    document.getElementById('modalTitle').textContent = `「${name}」の代行引き受けをリセットしますか？`;
+    document.getElementById('modalDesc').textContent = 'この申込者の入力内容がすべて消えます。この操作は元に戻せません。';
+    document.getElementById('modalOverlay').classList.add('open');
+  }
+
+  function closeModal() {
+    document.getElementById('modalOverlay').classList.remove('open');
+    resetTarget = null;
+  }
+
+  function executeReset() {
+    const target = resetTarget;
+    closeModal();
+    if (target === 'all') {
+      blocks = [emptyBlock()];
+      tokutenPrice = '';
+      eventName = '';
+    } else {
+      const idx = blocks.findIndex(b => String(b.id) === String(target));
+      if (idx !== -1) blocks[idx] = emptyBlock();
+    }
+    save();
+    render();
+  }
+
+  // イベント名の変更
+  document.getElementById('eventName').addEventListener('input', function() {
+    eventName = this.value;
+    save();
+  });
+
+  // 特典金額の変更
+  document.getElementById('tokutenPrice').addEventListener('input', function() {
+    tokutenPrice = this.value;
+    save();
+    // 全ブロックの特典枚数を再描画
+    blocks.forEach(b => rerenderTotals(b, b.id));
+    updateGrandTotal();
+  });
+
+  // モーダル外クリックで閉じる
+  document.getElementById('modalOverlay').addEventListener('click', function(e) {
+    if (e.target === this) closeModal();
+  });
+
+  function esc(str) {
+    if (!str) return '';
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/"/g, '&quot;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
+  }
+
+  // --- Excel出力 ---
+  function exportExcel() {
+    const wb = XLSX.utils.book_new();
+    const tPrice = parseInt(tokutenPrice) || 0;
+
+    // ===== シート1: 全体サマリー =====
+    const summaryData = [];
+    const evName = eventName || '（未入力）';
+
+    // タイトル行
+    summaryData.push([`イベント特典フォーム - ${evName}`]);
+    summaryData.push([`特典金額: ${tPrice > 0 ? tPrice.toLocaleString() + '円' : '未設定'}`]);
+    summaryData.push([]);
+
+    // ヘッダー
+    summaryData.push(['No.', 'お名前', '希望特典', '合計金額（円）', '特典枚数（枚）']);
+
+    let grandTotal = 0;
+    blocks.forEach((block, bi) => {
+      const subtotal = calcSubtotal(block);
+      const tCount = tPrice > 0 ? Math.floor(subtotal / tPrice) : 0;
+      grandTotal += subtotal;
+      summaryData.push([
+        bi + 1,
+        block.customer || '',
+        block.tokuten || '',
+        subtotal,
+        tCount
+      ]);
+    });
+
+    // 合計行
+    summaryData.push([]);
+    summaryData.push(['', '', '合計', grandTotal, '']);
+
+    const wsSummary = XLSX.utils.aoa_to_sheet(summaryData);
+
+    // 列幅設定
+    wsSummary['!cols'] = [
+      { wch: 5 },   // No.
+      { wch: 16 },  // お名前
+      { wch: 20 },  // 希望特典
+      { wch: 16 },  // 合計金額
+      { wch: 12 },  // 特典枚数
+    ];
+
+    // スタイル: タイトル
+    const titleCell = wsSummary['A1'];
+    if (titleCell) {
+      titleCell.s = {
+        font: { bold: true, sz: 14 },
+        fill: { fgColor: { rgb: '2B6CB0' }, patternType: 'solid' },
+        fontColor: { rgb: 'FFFFFF' }
+      };
+    }
+
+    // スタイル: ヘッダー行（4行目）
+    ['A4','B4','C4','D4','E4'].forEach(addr => {
+      if (wsSummary[addr]) {
+        wsSummary[addr].s = {
+          font: { bold: true, color: { rgb: 'FFFFFF' } },
+          fill: { fgColor: { rgb: '2B6CB0' }, patternType: 'solid' },
+          alignment: { horizontal: 'center' }
+        };
+      }
+    });
+
+    // スタイル: 合計行
+    const totalRowIdx = summaryData.length; // 最終行
+    const totalAddr = `C${totalRowIdx}`;
+    const totalValAddr = `D${totalRowIdx}`;
+    if (wsSummary[totalAddr]) {
+      wsSummary[totalAddr].s = { font: { bold: true } };
+    }
+    if (wsSummary[totalValAddr]) {
+      wsSummary[totalValAddr].s = {
+        font: { bold: true, color: { rgb: '2B6CB0' } },
+        numFmt: '#,##0'
+      };
+    }
+
+    // 金額セルに数値フォーマット
+    for (let i = 5; i < 5 + blocks.length; i++) {
+      const addr = `D${i}`;
+      if (wsSummary[addr]) {
+        wsSummary[addr].s = { numFmt: '#,##0', alignment: { horizontal: 'right' } };
+      }
+    }
+
+    XLSX.utils.book_append_sheet(wb, wsSummary, 'サマリー');
+
+    // ===== シート2以降: 代行引き受けごとの詳細 =====
+    blocks.forEach((block, bi) => {
+      const detailData = [];
+      const subtotal = calcSubtotal(block);
+      const tCount = tPrice > 0 ? Math.floor(subtotal / tPrice) : 0;
+
+      const sheetName = `${bi + 1}_${(block.customer || '未入力').slice(0, 8)}`;
+
+      detailData.push([`代行引き受け ${bi + 1}`]);
+      detailData.push([`イベント名: ${evName}`]);
+      detailData.push([]);
+      detailData.push(['お名前', block.customer || '']);
+      detailData.push(['希望特典', block.tokuten || '']);
+      detailData.push([]);
+
+      // 商品ヘッダー
+      detailData.push(['商品名', '単価（円）', '購入個数', '小計（円）']);
+
+      // 商品行（空行は除外）
+      block.items.forEach(item => {
+        const p = parseInt(item.price) || 0;
+        const q = parseInt(item.qty) || 0;
+        if (!item.name && !p) return; // 空行スキップ
+        detailData.push([
+          item.name || '',
+          p || '',
+          q,
+          p * q
+        ]);
+      });
+
+      detailData.push([]);
+      detailData.push(['', '', '合計金額', subtotal]);
+      detailData.push(['', '', '特典枚数', tCount]);
+
+      const wsDetail = XLSX.utils.aoa_to_sheet(detailData);
+
+      // 列幅
+      wsDetail['!cols'] = [
+        { wch: 22 },  // 商品名
+        { wch: 12 },  // 単価
+        { wch: 10 },  // 個数
+        { wch: 14 },  // 小計
+      ];
+
+      // タイトルスタイル
+      if (wsDetail['A1']) {
+        wsDetail['A1'].s = {
+          font: { bold: true, sz: 13, color: { rgb: 'FFFFFF' } },
+          fill: { fgColor: { rgb: '2B6CB0' }, patternType: 'solid' }
+        };
+      }
+
+      // 商品ヘッダー行（7行目）
+      ['A7','B7','C7','D7'].forEach(addr => {
+        if (wsDetail[addr]) {
+          wsDetail[addr].s = {
+            font: { bold: true, color: { rgb: 'FFFFFF' } },
+            fill: { fgColor: { rgb: '4A85C8' }, patternType: 'solid' },
+            alignment: { horizontal: 'center' }
+          };
+        }
+      });
+
+      XLSX.utils.book_append_sheet(wb, wsDetail, sheetName);
+    });
+
+    // ファイル名
+    const now = new Date();
+    const dateStr = `${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}`;
+    const fileName = `特典申込_${eventName || 'イベント'}_${dateStr}.xlsx`;
+
+    XLSX.writeFile(wb, fileName);
+  }
+
+  // --- 初期化 ---
+  load();
+  render();
+</script>
+</body>
+</html>
